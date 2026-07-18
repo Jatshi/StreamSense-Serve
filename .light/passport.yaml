@@ -1,0 +1,20 @@
+project: StreamSense-Serve
+owner: Jianting Shi
+status: active
+current_stage: a03-foundation
+artifacts:
+  project_plan:
+    path: docs/PROJECT_PLAN.md
+    gate: pending-import
+  implementation:
+    path: src/streamsense
+    gate: PASS
+    evidence: "10 local tests passed; coverage 84%"
+  run_manifest:
+    path: run_manifest.md
+    gate: pending
+known_limitations:
+  - "No model-backed media ingestion is implemented yet."
+  - "No GPU benchmark has been run yet."
+next_action: "Implement deterministic media ingestion and model adapter contracts."
+
