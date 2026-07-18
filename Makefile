@@ -1,4 +1,4 @@
-.PHONY: install test lint format serve smoke
+.PHONY: install test lint format serve smoke benchmark
 
 install:
 	python -m pip install -e ".[dev]"
@@ -20,3 +20,5 @@ serve:
 smoke:
 	python scripts/smoke_test.py
 
+benchmark:
+	python scripts/routing_benchmark.py --fixture benchmarks/data/router_fixture.jsonl --output runs/routing.json

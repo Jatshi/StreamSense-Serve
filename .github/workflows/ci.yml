@@ -25,3 +25,8 @@ jobs:
       - run: ruff format --check .
       - run: pytest --cov=streamsense --cov-report=term-missing --cov-fail-under=80
 
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build --tag streamsense-serve:ci .

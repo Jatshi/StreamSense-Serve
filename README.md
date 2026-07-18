@@ -2,6 +2,8 @@
 
 Evidence-first audiovisual event inference with adaptive escalation to a vision-language model.
 
+[简体中文](README.zh-CN.md)
+
 ![StreamSense evidence console](docs/assets/dashboard.png)
 
 StreamSense-Serve turns time-aligned audio and video observations into structured events. Every
@@ -64,4 +66,6 @@ safety, or surveillance decisions.
 
 ## License
 
-Apache-2.0. Third-party model and dataset licenses remain in force.
+The project code is Apache-2.0. Third-party model and dataset terms remain in force; in
+particular, the pinned Qwen2.5-VL-3B-Instruct weights use the Qwen Research License and are
+restricted to non-commercial use unless separately licensed. See [third-party notices](THIRD_PARTY_NOTICES.md).
