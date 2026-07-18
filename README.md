@@ -39,6 +39,10 @@ To connect a local vLLM/SGLang server, set `STREAMSENSE_VLM_BASE_URL` and
 OpenAI-compatible endpoint; image evidence is embedded as a data URL and the response is schema
 validated before persistence.
 
+Pinned model revisions and reference runtime settings are in `models.lock`. See the
+[dataset card](docs/DATASET_CARD.md), [model card](docs/MODEL_CARD.md), and
+[known failure cases](docs/FAILURE_CASES.md) before interpreting benchmark results.
+
 ## Verified RTX 4090 result
 
 On the committed 11-second public JFK sample, faster-whisper `small` with FP16 transcribed the

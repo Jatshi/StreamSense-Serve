@@ -1,0 +1,17 @@
+[asr]
+name = "Systran/faster-whisper-small"
+revision = "536b0662742c02347bc0e980a01041f333bce120"
+runtime = "faster-whisper"
+precision = "float16"
+
+[vlm]
+name = "Qwen/Qwen2.5-VL-3B-Instruct"
+revision = "66285546d2b821cf421d4f5eb2576359d3770cd3"
+runtime = "vllm==0.15.1"
+precision = "float16"
+max_model_len = 4096
+
+[router]
+name = "streamsense-rule-router"
+revision = "rules-v1"
+

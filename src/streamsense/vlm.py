@@ -6,7 +6,7 @@ import re
 from pathlib import Path
 
 import httpx
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel, Field
 
 from .media import Observation, ObservationEscalationError, calibrated_uncertainty
 from .schema import EventLabel, Evidence
@@ -28,10 +28,14 @@ class OpenAIVLMEnhancer:
         base_url: str,
         model: str,
         timeout_seconds: float = 60.0,
+        max_attempts: int = 2,
         client: httpx.Client | None = None,
     ) -> None:
+        if max_attempts < 1:
+            raise ValueError("max_attempts must be positive")
         self.base_url = base_url.rstrip("/")
         self.model = model
+        self.max_attempts = max_attempts
         self.client = client or httpx.Client(timeout=timeout_seconds)
 
     def enhance(self, observation: Observation) -> Observation:
@@ -40,50 +44,24 @@ class OpenAIVLMEnhancer:
         try:
             evidence_path = Path(observation.evidence.uri.split("#", 1)[0])
             image_url = self._data_url(evidence_path)
-            response = self.client.post(
-                f"{self.base_url}/v1/chat/completions",
-                json={
-                    "model": self.model,
-                    "temperature": 0,
-                    "max_tokens": 200,
-                    "messages": [
-                        {
-                            "role": "system",
-                            "content": (
-                                "Describe only visible evidence. Return JSON with keys summary, "
-                                "label, confidence, risk_score. Do not identify people or infer "
-                                "intent."
-                            ),
-                        },
-                        {
-                            "role": "user",
-                            "content": [
-                                {
-                                    "type": "text",
-                                    "text": (
-                                        "This frame follows a detected visual change. Describe the "
-                                        "visible change conservatively and assign a short label."
-                                    ),
-                                },
-                                {"type": "image_url", "image_url": {"url": image_url}},
-                            ],
-                        },
-                    ],
-                },
-            )
-            response.raise_for_status()
-            content = response.json()["choices"][0]["message"]["content"]
-            description = VLMDescription.model_validate(self._parse_json(content))
-        except (
-            FileNotFoundError,
-            httpx.HTTPError,
-            json.JSONDecodeError,
-            KeyError,
-            TypeError,
-            ValueError,
-            ValidationError,
-        ) as error:
+        except FileNotFoundError as error:
             raise ObservationEscalationError("VLM enhancement failed") from error
+        last_error: Exception | None = None
+        for _ in range(self.max_attempts):
+            try:
+                description = self._request_description(image_url)
+                break
+            except (
+                httpx.HTTPError,
+                json.JSONDecodeError,
+                IndexError,
+                KeyError,
+                TypeError,
+                ValueError,
+            ) as error:
+                last_error = error
+        else:
+            raise ObservationEscalationError("VLM enhancement failed") from last_error
         return Observation(
             event_type="vlm_visual_event",
             start_ms=observation.start_ms,
@@ -103,6 +81,41 @@ class OpenAIVLMEnhancer:
             model_name="vlm",
             model_version=self.model,
         )
+
+    def _request_description(self, image_url: str) -> VLMDescription:
+        response = self.client.post(
+            f"{self.base_url}/v1/chat/completions",
+            json={
+                "model": self.model,
+                "temperature": 0,
+                "max_tokens": 200,
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": (
+                            "Describe only visible evidence. Return JSON with keys summary, "
+                            "label, confidence, risk_score. Do not identify people or infer intent."
+                        ),
+                    },
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": (
+                                    "This frame follows a detected visual change. Describe the "
+                                    "visible change conservatively and assign a short label."
+                                ),
+                            },
+                            {"type": "image_url", "image_url": {"url": image_url}},
+                        ],
+                    },
+                ],
+            },
+        )
+        response.raise_for_status()
+        content = response.json()["choices"][0]["message"]["content"]
+        return VLMDescription.model_validate(self._parse_json(content))
 
     @staticmethod
     def _parse_json(content: str) -> dict[str, object]:
