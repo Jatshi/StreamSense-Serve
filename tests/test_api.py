@@ -11,6 +11,13 @@ def test_health_and_demo_pipeline(tmp_path) -> None:
     health = client.get("/health")
     assert health.status_code == 200
     assert health.json()["status"] == "ok"
+    assert health.headers["x-trace-id"]
+    dashboard = client.get("/")
+    assert dashboard.status_code == 200
+    assert "StreamSense" in dashboard.text
+    metrics = client.get("/metrics")
+    assert metrics.status_code == 200
+    assert "streamsense_http_requests_total" in metrics.text
 
     response = client.post(
         "/v1/events",
@@ -48,6 +55,9 @@ def test_upload_wave_runs_media_pipeline(tmp_path) -> None:
     assert payload["events_created"] >= 1
     events = client.get("/v1/events", params={"stream_id": "upload-demo"}).json()
     assert events[0]["evidence"][0]["kind"] == "audio"
+    evidence = client.get(f"/v1/evidence/{events[0]['event_id']}/0")
+    assert evidence.status_code == 200
+    assert evidence.content[:4] == b"RIFF"
 
 
 def test_upload_rejects_unsupported_media(tmp_path) -> None:

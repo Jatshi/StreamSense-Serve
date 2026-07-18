@@ -7,6 +7,7 @@ from typing import Annotated
 from uuid import uuid4
 
 from fastapi import FastAPI, File, Form, HTTPException, Query, UploadFile, status
+from fastapi.responses import FileResponse
 
 from .agent import EvidenceAgent
 from .analyzers import FasterWhisperAnalyzer, FrameChangeAnalyzer
@@ -14,6 +15,7 @@ from .media import AudioEnergyAnalyzer, MediaPipeline, PipelineResult
 from .routing import RouteDecision, RouteFeatures, RouterConfig, RuleRouter
 from .schema import EventRecord, GroundedAnswer, QueryRequest
 from .store import EventStore
+from .telemetry import ROUTE_DECISIONS, configure_telemetry
 from .vlm import OpenAIVLMEnhancer
 
 
@@ -64,10 +66,15 @@ def create_app(
     )
     app.state.store = store
     app.state.router = router
+    configure_telemetry(app)
 
     @app.get("/health")
     def health() -> dict[str, str]:
         return {"status": "ok", "database": str(resolved_path)}
+
+    @app.get("/", include_in_schema=False)
+    def dashboard() -> FileResponse:
+        return FileResponse(Path(__file__).parent / "static" / "index.html")
 
     @app.post("/v1/events", response_model=EventRecord, status_code=status.HTTP_201_CREATED)
     def create_event(event: EventRecord) -> EventRecord:
@@ -88,9 +95,21 @@ def create_app(
             raise HTTPException(status_code=404, detail="event not found")
         return event
 
+    @app.get("/v1/evidence/{event_id}/{evidence_index}")
+    def get_evidence(event_id: str, evidence_index: int) -> FileResponse:
+        event = store.get(event_id)
+        if event is None or not 0 <= evidence_index < len(event.evidence):
+            raise HTTPException(status_code=404, detail="evidence not found")
+        evidence_path = Path(event.evidence[evidence_index].uri.split("#", 1)[0]).resolve()
+        if not evidence_path.is_relative_to(resolved_media_dir) or not evidence_path.is_file():
+            raise HTTPException(status_code=404, detail="evidence file is unavailable")
+        return FileResponse(evidence_path)
+
     @app.post("/v1/route", response_model=RouteDecision)
     def route(features: RouteFeatures) -> RouteDecision:
-        return router.decide(features)
+        decision = router.decide(features)
+        ROUTE_DECISIONS.labels(decision.route).inc()
+        return decision
 
     @app.post("/v1/query", response_model=GroundedAnswer)
     def query(request: QueryRequest) -> GroundedAnswer:

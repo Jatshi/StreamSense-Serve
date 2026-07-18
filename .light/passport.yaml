@@ -1,7 +1,7 @@
 project: StreamSense-Serve
 owner: Jianting Shi
 status: active
-current_stage: a03-foundation
+current_stage: a03-gpu-vlm
 artifacts:
   project_plan:
     path: docs/PROJECT_PLAN.md
@@ -9,12 +9,12 @@ artifacts:
   implementation:
     path: src/streamsense
     gate: PASS
-    evidence: "10 local tests passed; coverage 84%"
+    evidence: "26 local tests passed; coverage 86%; Linux/Python 3.10 parity passed"
   run_manifest:
     path: run_manifest.md
-    gate: pending
+    gate: PASS
+    evidence: "RTX 4090 faster-whisper latency and SNR robustness artifacts committed"
 known_limitations:
-  - "No model-backed media ingestion is implemented yet."
-  - "No GPU benchmark has been run yet."
-next_action: "Implement deterministic media ingestion and model adapter contracts."
-
+  - "VLM server integration is implemented but its live RTX 4090 benchmark is pending."
+  - "Routing trade-off evaluation still needs a labeled visual event set."
+next_action: "Complete vLLM installation, run visual escalation, then benchmark routing and API load."

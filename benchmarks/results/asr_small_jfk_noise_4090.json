@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "configuration": {
+    "model": "small",
+    "seed": 17,
+    "reference": "And so my fellow Americans, ask not what your country can do for you, ask what you can do for your country.",
+    "sample_rate": 16000,
+    "samples": 176000,
+    "media_sha256": "59dfb9a4acb36fe2a2affc14bacbee2920ff435cb13cc314a08c13f66ba7860e",
+    "noise": "seeded Gaussian white noise"
+  },
+  "results": [
+    {
+      "condition": "clean",
+      "snr_db": null,
+      "elapsed_seconds": 3.419816292822361,
+      "transcript": "And so my fellow Americans, ask not what your country can do for you, ask what you can do for your country.",
+      "word_error_rate": 0.0,
+      "segments": 1
+    },
+    {
+      "condition": "snr_20db",
+      "snr_db": 20.0,
+      "elapsed_seconds": 0.31154537200927734,
+      "transcript": "And so, my fellow Americans, ask not what your country can do for you, ask what you can do for your country.",
+      "word_error_rate": 0.0,
+      "segments": 1
+    },
+    {
+      "condition": "snr_10db",
+      "snr_db": 10.0,
+      "elapsed_seconds": 0.396252553910017,
+      "transcript": "And so, my fellow Americans, ask not what your country can do for you, ask what you can do for your country.",
+      "word_error_rate": 0.0,
+      "segments": 2
+    },
+    {
+      "condition": "snr_0db",
+      "snr_db": 0.0,
+      "elapsed_seconds": 0.3596252351999283,
+      "transcript": "And so, my fellow Americans, and not what your country can do for you and what you can do for your country.",
+      "word_error_rate": 0.09090909090909091,
+      "segments": 1
+    },
+    {
+      "condition": "snr_-5db",
+      "snr_db": -5.0,
+      "elapsed_seconds": 0.31088417023420334,
+      "transcript": "And so my fellow nerds, and not what your husband can do to you, and what you can do to your husband.",
+      "word_error_rate": 0.3181818181818182,
+      "segments": 1
+    }
+  ]
+}

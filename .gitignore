@@ -16,4 +16,4 @@ runs/
 artifacts/
 .env
 *.log
-
+chrome-profile*/
