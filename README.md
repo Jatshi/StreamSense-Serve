@@ -31,6 +31,9 @@ pytest
 streamsense serve --host 127.0.0.1 --port 8000
 ```
 
+For the exact v0.1.0 reference environment, install `requirements.lock` followed by
+`python -m pip install -e . --no-deps`. The regular extras remain the more flexible developer path.
+
 Open `http://127.0.0.1:8000/docs` for the API documentation.
 
 To enable timestamped ASR, install `.[asr]` and set `STREAMSENSE_ASR_MODEL=small`. The model is

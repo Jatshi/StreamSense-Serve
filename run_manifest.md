@@ -58,3 +58,12 @@
 - Layout audit: 6/6 PASS
 - AI-tell lint: CLEAN
 - Artifact: `docs/assets/dashboard.png`
+
+## Release-candidate gate
+
+- AutoDL/Linux: `make test`, `make smoke`, and `make benchmark` passed in the reference venv
+- Local/Windows: 32 tests passed at 87% coverage; Ruff lint and format checks passed
+- Wheel: built from source with the dashboard, Apache-2.0 license, and NOTICE included
+- Clean wheel install: isolated Python 3.11 environment reported no broken requirements; CLI,
+  `/health`, and dashboard smoke checks passed
+- CI: Python 3.10/3.11/3.12 tests plus Docker image build

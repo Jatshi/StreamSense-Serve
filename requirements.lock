@@ -1,0 +1,22 @@
+# Verified Linux/Python 3.10 reference environment used for v0.1.0.
+# Install the project itself in editable mode without dependency resolution afterward:
+#   python -m pip install -r requirements.lock
+#   python -m pip install -e . --no-deps
+
+fastapi==0.139.2
+httpx==0.28.1
+numpy==2.2.6
+pydantic==2.13.4
+prometheus-client==0.25.0
+python-multipart==0.0.32
+uvicorn[standard]==0.51.0
+
+# Media and ASR extras used by the reference AutoDL run.
+faster-whisper==1.2.1
+opencv-python-headless==4.13.0.92
+soundfile==0.14.0
+
+# Quality gates.
+pytest==8.4.2
+pytest-cov==6.3.0
+ruff==0.15.22

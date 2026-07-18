@@ -26,6 +26,9 @@ make smoke
 streamsense serve --host 127.0.0.1 --port 8000
 ```
 
+若要严格复现 v0.1.0 的 AutoDL 参考环境，先安装 `requirements.lock`，再执行
+`python -m pip install -e . --no-deps`；日常开发仍可使用上面的 extras 安装方式。
+
 若需 GPU ASR，安装 `.[asr]` 并设置 `STREAMSENSE_ASR_MODEL=small`。若需 VLM，另行启动
 OpenAI 兼容的本地服务，并设置 `STREAMSENSE_VLM_BASE_URL` 与
 `STREAMSENSE_VLM_MODEL`。开发服务默认仅监听本机；对网络开放前必须增加 TLS、认证和限流。

@@ -1,20 +1,22 @@
 project: StreamSense-Serve
 owner: Jianting Shi
-status: active
-current_stage: a03-gpu-vlm
+status: release_candidate
+current_stage: a05-release-audit
 artifacts:
   project_plan:
     path: docs/PROJECT_PLAN.md
-    gate: pending-import
+    gate: PASS
+    evidence: "Core v0.1 scope implemented; deferred corpus-level claims remain explicit"
   implementation:
     path: src/streamsense
     gate: PASS
-    evidence: "26 local tests passed; coverage 86%; Linux/Python 3.10 parity passed"
+    evidence: "32 tests passed; coverage 87%; Linux 3.10 and CI 3.10-3.12 passed"
   run_manifest:
     path: run_manifest.md
     gate: PASS
-    evidence: "RTX 4090 faster-whisper latency and SNR robustness artifacts committed"
+    evidence: "RTX 4090 ASR, SNR, routing, API load, grounded QA, and local VLM artifacts committed"
 known_limitations:
-  - "VLM server integration is implemented but its live RTX 4090 benchmark is pending."
-  - "Routing trade-off evaluation still needs a labeled visual event set."
-next_action: "Complete vLLM installation, run visual escalation, then benchmark routing and API load."
+  - "The routing fixture is curated and not an unbiased deployment evaluation set."
+  - "The bundled visual fixture is synthetic; no corpus-level visual accuracy is claimed."
+  - "Qwen2.5-VL-3B-Instruct weights require non-commercial use unless separately licensed."
+next_action: "Complete final security/build audit and publish v0.1.0."
