@@ -58,6 +58,11 @@ seconds. A separate loopback health check completed 500/500 requests at concurre
 195.6 requests/s observed throughput and 334.8 ms p95 latency. These figures are reproducible
 single-host diagnostics, not production capacity claims.
 
+On the 20-case curated routing fixture, the rule router retained all 10 oracle-positive cases
+while escalating 11/20 windows, compared with 20/20 for the always-escalate baseline. The fixture
+GPU-cost reduction is 45%. Because thresholds were inspected against this hand-authored fixture,
+this is a deterministic behavior/cost check rather than an unbiased deployment estimate.
+
 ## Safety and privacy
 
 The project does not perform identity recognition. Use only media that you are licensed and

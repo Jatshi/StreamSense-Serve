@@ -6,7 +6,7 @@
 - Install: `python -m pip install -e ".[dev]"`
 - Quality: `ruff check . && ruff format --check .`
 - Test: `pytest --cov=streamsense --cov-report=term-missing`
-- Result: 30 tests passed, 87% statement coverage
+- Result: 32 tests passed, 87% statement coverage
 - GPU: not used
 - Artifacts: terminal output only; remote/GPU run pending
 
@@ -29,6 +29,16 @@
 - Observed throughput: 195.6 requests/s; p50/p95/p99: 81.8/334.8/491.2 ms
 - Scope: single-host engineering checks, not production capacity or corpus accuracy claims
 - Artifacts: `benchmarks/results/jfk_api_end_to_end_4090.json`, `benchmarks/results/api_health_load_4090.json`
+
+## Curated routing trade-off run
+
+- Fixture: 20 hand-authored engineering cases; 10 escalation-positive
+- Rule router: recall 1.000, precision 0.909, escalation rate 0.550
+- Always-escalate baseline: recall 1.000, precision 0.500, escalation rate 1.000
+- Fixture GPU cost: 3.85 s versus 7.00 s (45% reduction at equal fixture recall)
+- Scope: thresholds were inspected against this fixture; this is a behavior regression test, not
+  an unbiased deployment estimate
+- Artifact: `benchmarks/results/routing_fixture.json`
 
 ## Web console quality gate
 

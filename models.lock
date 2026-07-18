@@ -14,4 +14,7 @@ max_model_len = 4096
 [router]
 name = "streamsense-rule-router"
 revision = "rules-v1"
-
+risk_threshold = 0.75
+uncertainty_threshold = 0.60
+conflict_threshold = 0.55
+exploration_rate = 0.02

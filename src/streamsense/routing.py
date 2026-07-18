@@ -15,7 +15,7 @@ class RouteFeatures(BaseModel):
 
 class RouterConfig(BaseModel):
     risk_threshold: float = Field(default=0.75, ge=0.0, le=1.0)
-    uncertainty_threshold: float = Field(default=0.65, ge=0.0, le=1.0)
+    uncertainty_threshold: float = Field(default=0.60, ge=0.0, le=1.0)
     conflict_threshold: float = Field(default=0.55, ge=0.0, le=1.0)
     exploration_rate: float = Field(default=0.02, ge=0.0, le=1.0)
     seed: int = 17
