@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 import pytest
 from pydantic import ValidationError
@@ -17,7 +17,7 @@ def test_event_requires_valid_time_and_evidence() -> None:
         labels=[EventLabel(name="impact", score=0.8)],
         evidence=[Evidence(kind="audio", uri="media/demo.wav#t=1,2.5", score=0.8)],
         route="lightweight",
-        created_at=datetime.now(UTC),
+        created_at=datetime.now(timezone.utc),
     )
     assert event.duration_ms == 1_500
     assert event.is_grounded

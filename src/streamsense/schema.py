@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from typing import Literal
 
 from pydantic import BaseModel, Field, model_validator
@@ -33,7 +33,7 @@ class EventRecord(BaseModel):
     route: RouteName
     model_versions: dict[str, str] = Field(default_factory=dict)
     latency_ms: float | None = Field(default=None, ge=0.0)
-    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     review_state: Literal["unreviewed", "accepted", "rejected"] = "unreviewed"
 
     @model_validator(mode="after")
