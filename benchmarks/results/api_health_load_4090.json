@@ -1,0 +1,21 @@
+{
+  "benchmark": "GET /health loopback load check",
+  "environment": {
+    "accelerator": "NVIDIA GeForce RTX 4090 24 GB",
+    "transport": "localhost HTTP",
+    "server": "uvicorn, one worker"
+  },
+  "requests": 500,
+  "concurrency": 25,
+  "successes": 500,
+  "errors": 0,
+  "elapsed_seconds": 2.556490547955036,
+  "throughput_requests_per_second": 195.5806174992336,
+  "latency_ms": {
+    "p50": 81.76957070827484,
+    "p95": 334.8366247490037,
+    "p99": 491.1571509391069,
+    "max": 642.8959891200066
+  },
+  "caveat": "Single-host engineering check; not a production capacity claim."
+}

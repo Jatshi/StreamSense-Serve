@@ -14,6 +14,7 @@ uncertain, conflicting, or visually grounded requests to an expensive VLM worker
 - WAV activity detection, timestamped faster-whisper ASR, and video frame-change evidence.
 - Risk/uncertainty/conflict-aware routing with deterministic exploration.
 - OpenAI-compatible local VLM escalation for selected visual evidence.
+- Explicit human-review fallback when optional heavyweight inference is absent or unavailable.
 - Evidence-constrained retrieval that abstains when no stored event supports an answer.
 - FastAPI, Prometheus metrics, optional OpenTelemetry export, Docker, CLI, and web console.
 - Reproducible RTX 4090 ASR latency and noise-robustness benchmarks under `benchmarks/results`.
@@ -45,6 +46,11 @@ reference exactly. Excluding model download/load, the median of two warm runs wa
 (real-time factor 0.032). Seeded white-noise stress tests produced WER 0.0 at 20/10 dB, 0.091 at
 0 dB, and 0.318 at -5 dB. These are single-sample engineering checks, not corpus-level quality
 claims; raw JSON, configuration, transcript, and sample hash are committed.
+
+The same resident-model deployment completed the full upload-to-grounded-query flow in 3.034
+seconds. A separate loopback health check completed 500/500 requests at concurrency 25 with
+195.6 requests/s observed throughput and 334.8 ms p95 latency. These figures are reproducible
+single-host diagnostics, not production capacity claims.
 
 ## Safety and privacy
 

@@ -6,9 +6,9 @@ import re
 from pathlib import Path
 
 import httpx
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError
 
-from .media import Observation, calibrated_uncertainty
+from .media import Observation, ObservationEscalationError, calibrated_uncertainty
 from .schema import EventLabel, Evidence
 
 
@@ -37,41 +37,53 @@ class OpenAIVLMEnhancer:
     def enhance(self, observation: Observation) -> Observation:
         if observation.evidence.kind != "frame":
             return observation
-        evidence_path = Path(observation.evidence.uri.split("#", 1)[0])
-        image_url = self._data_url(evidence_path)
-        response = self.client.post(
-            f"{self.base_url}/v1/chat/completions",
-            json={
-                "model": self.model,
-                "temperature": 0,
-                "max_tokens": 200,
-                "messages": [
-                    {
-                        "role": "system",
-                        "content": (
-                            "Describe only visible evidence. Return JSON with keys summary, "
-                            "label, confidence, risk_score. Do not identify people or infer intent."
-                        ),
-                    },
-                    {
-                        "role": "user",
-                        "content": [
-                            {
-                                "type": "text",
-                                "text": (
-                                    "This frame follows a detected visual change. Describe the "
-                                    "visible change conservatively and assign a short label."
-                                ),
-                            },
-                            {"type": "image_url", "image_url": {"url": image_url}},
-                        ],
-                    },
-                ],
-            },
-        )
-        response.raise_for_status()
-        content = response.json()["choices"][0]["message"]["content"]
-        description = VLMDescription.model_validate(self._parse_json(content))
+        try:
+            evidence_path = Path(observation.evidence.uri.split("#", 1)[0])
+            image_url = self._data_url(evidence_path)
+            response = self.client.post(
+                f"{self.base_url}/v1/chat/completions",
+                json={
+                    "model": self.model,
+                    "temperature": 0,
+                    "max_tokens": 200,
+                    "messages": [
+                        {
+                            "role": "system",
+                            "content": (
+                                "Describe only visible evidence. Return JSON with keys summary, "
+                                "label, confidence, risk_score. Do not identify people or infer "
+                                "intent."
+                            ),
+                        },
+                        {
+                            "role": "user",
+                            "content": [
+                                {
+                                    "type": "text",
+                                    "text": (
+                                        "This frame follows a detected visual change. Describe the "
+                                        "visible change conservatively and assign a short label."
+                                    ),
+                                },
+                                {"type": "image_url", "image_url": {"url": image_url}},
+                            ],
+                        },
+                    ],
+                },
+            )
+            response.raise_for_status()
+            content = response.json()["choices"][0]["message"]["content"]
+            description = VLMDescription.model_validate(self._parse_json(content))
+        except (
+            FileNotFoundError,
+            httpx.HTTPError,
+            json.JSONDecodeError,
+            KeyError,
+            TypeError,
+            ValueError,
+            ValidationError,
+        ) as error:
+            raise ObservationEscalationError("VLM enhancement failed") from error
         return Observation(
             event_type="vlm_visual_event",
             start_ms=observation.start_ms,

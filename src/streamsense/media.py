@@ -11,7 +11,7 @@ from typing import Protocol
 import numpy as np
 
 from .routing import RouteFeatures, RuleRouter
-from .schema import EventLabel, EventRecord, Evidence
+from .schema import EventLabel, EventRecord, Evidence, RouteName
 from .store import EventStore
 
 
@@ -39,6 +39,10 @@ class ObservationEscalator(Protocol):
     def enhance(self, observation: Observation) -> Observation: ...
 
 
+class ObservationEscalationError(RuntimeError):
+    """Raised when an optional heavyweight model cannot enhance evidence."""
+
+
 @dataclass(frozen=True)
 class PipelineResult:
     stream_id: str
@@ -47,6 +51,7 @@ class PipelineResult:
     events_created: int
     lightweight_events: int
     escalated_events: int
+    human_review_events: int
     elapsed_ms: float
 
 
@@ -186,6 +191,7 @@ class MediaPipeline:
             observations.extend(analyzer.analyze(resolved, stream_id=stream_id))
         lightweight = 0
         escalated = 0
+        human_review = 0
         for observation in observations:
             decision = self.router.decide(
                 RouteFeatures(
@@ -195,10 +201,18 @@ class MediaPipeline:
                     needs_visual_grounding=observation.needs_visual_grounding,
                 )
             )
-            lightweight += decision.route == "lightweight"
-            escalated += decision.route == "vlm_escalated"
-            if decision.route == "vlm_escalated" and self.escalator is not None:
-                observation = self.escalator.enhance(observation)
+            route: RouteName = decision.route
+            if route == "vlm_escalated":
+                if self.escalator is None:
+                    route = "human_review"
+                else:
+                    try:
+                        observation = self.escalator.enhance(observation)
+                    except ObservationEscalationError:
+                        route = "human_review"
+            lightweight += route == "lightweight"
+            escalated += route == "vlm_escalated"
+            human_review += route == "human_review"
             event_id = self._event_id(stream_id, observation)
             elapsed_ms = (time.perf_counter() - started) * 1000
             self.store.upsert(
@@ -211,7 +225,7 @@ class MediaPipeline:
                     summary=observation.summary,
                     labels=[observation.label],
                     evidence=[observation.evidence],
-                    route=decision.route,
+                    route=route,
                     model_versions={observation.model_name: observation.model_version},
                     latency_ms=elapsed_ms,
                 )
@@ -223,6 +237,7 @@ class MediaPipeline:
             events_created=len(observations),
             lightweight_events=lightweight,
             escalated_events=escalated,
+            human_review_events=human_review,
             elapsed_ms=(time.perf_counter() - started) * 1000,
         )
 

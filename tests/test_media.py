@@ -6,7 +6,12 @@ from pathlib import Path
 
 import numpy as np
 
-from streamsense.media import AudioEnergyAnalyzer, MediaPipeline, Observation
+from streamsense.media import (
+    AudioEnergyAnalyzer,
+    MediaPipeline,
+    Observation,
+    ObservationEscalationError,
+)
 from streamsense.routing import RouterConfig, RuleRouter
 from streamsense.store import EventStore
 
@@ -105,3 +110,52 @@ def test_pipeline_invokes_escalator_for_uncertain_observation(tmp_path) -> None:
     ).analyze(media_path, stream_id="escalation-demo")
     assert escalator.called == 1
     assert store.list()[0].summary == "Enhanced evidence."
+
+
+def test_pipeline_marks_unavailable_escalation_for_human_review(tmp_path) -> None:
+    media_path = tmp_path / "tone.wav"
+    write_test_wave(media_path)
+
+    class UncertainAnalyzer:
+        def analyze(self, media_path, *, stream_id):
+            del stream_id
+            original = AudioEnergyAnalyzer().analyze(media_path, stream_id="unused")[0]
+            return [Observation(**{**original.__dict__, "uncertainty": 0.99})]
+
+    store = EventStore(tmp_path / "events.db")
+    result = MediaPipeline(
+        analyzers=[UncertainAnalyzer()],
+        router=RuleRouter(RouterConfig(exploration_rate=0.0)),
+        store=store,
+    ).analyze(media_path, stream_id="review-demo")
+
+    assert result.escalated_events == 0
+    assert result.human_review_events == 1
+    assert store.list()[0].route == "human_review"
+
+
+def test_pipeline_survives_expected_escalator_failure(tmp_path) -> None:
+    media_path = tmp_path / "tone.wav"
+    write_test_wave(media_path)
+
+    class UncertainAnalyzer:
+        def analyze(self, media_path, *, stream_id):
+            del stream_id
+            original = AudioEnergyAnalyzer().analyze(media_path, stream_id="unused")[0]
+            return [Observation(**{**original.__dict__, "uncertainty": 0.99})]
+
+    class FailingEscalator:
+        def enhance(self, observation):
+            del observation
+            raise ObservationEscalationError("model server unavailable")
+
+    store = EventStore(tmp_path / "events.db")
+    result = MediaPipeline(
+        analyzers=[UncertainAnalyzer()],
+        router=RuleRouter(RouterConfig(exploration_rate=0.0)),
+        store=store,
+        escalator=FailingEscalator(),
+    ).analyze(media_path, stream_id="fallback-demo")
+
+    assert result.human_review_events == 1
+    assert store.list()[0].route == "human_review"
