@@ -40,6 +40,18 @@
   an unbiased deployment estimate
 - Artifact: `benchmarks/results/routing_fixture.json`
 
+## AutoDL local VLM run
+
+- Runtime: vLLM 0.15.1, PyTorch 2.9.1+cu128, Qwen2.5-VL-3B-Instruct FP16
+- Model revision: `66285546d2b821cf421d4f5eb2576359d3770cd3`
+- Synthetic flow: MP4 decode -> 2.000 s change frame -> router -> strict JSON VLM -> SQLite
+- Pipeline result: 1 event, 1 successful escalation, 0 human-review fallbacks, 4167.8 ms
+- Stream latency after grammar warmup: median TTFT 54.8 ms; median total 313.6 ms
+- First request with the JSON grammar: TTFT 2541.6 ms; total 2802.7 ms
+- Observed resident GPU memory: 17855 MiB / 24564 MiB
+- Scope: one deterministic synthetic frame; not a visual-accuracy or capacity claim
+- Artifact: `benchmarks/results/vlm_qwen25_3b_4090.json`
+
 ## Web console quality gate
 
 - Chromium rendering: 1440 x 1100 with a persisted grounded event

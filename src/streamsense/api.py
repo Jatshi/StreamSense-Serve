@@ -8,6 +8,7 @@ from uuid import uuid4
 
 from fastapi import FastAPI, File, Form, HTTPException, Query, UploadFile, status
 from fastapi.responses import FileResponse
+from starlette.concurrency import run_in_threadpool
 
 from .agent import EvidenceAgent
 from .analyzers import FasterWhisperAnalyzer, FrameChangeAnalyzer
@@ -147,7 +148,19 @@ def create_app(
                     if written > max_bytes:
                         raise HTTPException(status_code=413, detail="media exceeds 200 MiB")
                     output.write(chunk)
-            return media_pipeline.analyze(destination, stream_id=stream_id)
+            result = await run_in_threadpool(
+                media_pipeline.analyze,
+                destination,
+                stream_id=stream_id,
+            )
+            for route_name, count in (
+                ("lightweight", result.lightweight_events),
+                ("vlm_escalated", result.escalated_events),
+                ("human_review", result.human_review_events),
+            ):
+                if count:
+                    ROUTE_DECISIONS.labels(route_name).inc(count)
+            return result
         except HTTPException:
             destination.unlink(missing_ok=True)
             raise

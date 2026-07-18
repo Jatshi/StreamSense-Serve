@@ -63,6 +63,12 @@ while escalating 11/20 windows, compared with 20/20 for the always-escalate base
 GPU-cost reduction is 45%. Because thresholds were inspected against this hand-authored fixture,
 this is a deterministic behavior/cost check rather than an unbiased deployment estimate.
 
+The pinned local Qwen2.5-VL-3B-Instruct service completed the synthetic video-change pipeline in
+4.168 seconds and persisted one grounded `vlm_visual_event`. After JSON-grammar warmup, three
+streaming runs had 54.8 ms median TTFT and 313.6 ms median total latency; the first grammar request
+took 2.803 seconds. Resident GPU memory was 17,855 MiB. The input generator, hashes, exact event,
+configuration, and raw timings are committed; this remains a one-frame engineering check.
+
 ## Safety and privacy
 
 The project does not perform identity recognition. Use only media that you are licensed and

@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "warning": "Synthetic single-fixture engineering check; not a visual-accuracy benchmark.",
+  "environment": {
+    "gpu": "NVIDIA GeForce RTX 4090",
+    "driver": "570.124.04",
+    "gpu_memory_total_mib": 24564,
+    "gpu_memory_used_after_mib": 17855,
+    "python": "3.10.8",
+    "vllm": "0.15.1",
+    "torch": "2.9.1+cu128",
+    "cuda_runtime": "12.8"
+  },
+  "configuration": {
+    "model": "Qwen/Qwen2.5-VL-3B-Instruct",
+    "model_revision": "66285546d2b821cf421d4f5eb2576359d3770cd3",
+    "dtype": "float16",
+    "max_model_len": 4096,
+    "gpu_memory_utilization": 0.72,
+    "max_images_per_prompt": 1,
+    "response_format": "strict JSON schema"
+  },
+  "fixture": {
+    "generator": "scripts/generate_visual_fixture.py",
+    "video": "visual_change_fixture.mp4",
+    "video_bytes": 58167,
+    "video_sha256": "3df1a3a0e9b3da8355bb333cac8cf57e523cfe75414afdaa0c879e678ac96fd1",
+    "evidence_frame": "frame_000000002000.ppm",
+    "evidence_frame_bytes": 691215,
+    "evidence_frame_sha256": "50c2f09b812725be93c5623350c20550d8c93f3c5c25920ea202f5865112fa63"
+  },
+  "pipeline": {
+    "observations": 1,
+    "events_created": 1,
+    "lightweight_events": 0,
+    "escalated_events": 1,
+    "human_review_events": 0,
+    "elapsed_ms": 4167.7959859371185,
+    "event": {
+      "event_type": "vlm_visual_event",
+      "start_ms": 1000,
+      "end_ms": 2000,
+      "summary": "Door open indicator",
+      "label": "Door Open",
+      "confidence": 0.95,
+      "route": "vlm_escalated",
+      "evidence": "fixture://frame_000000002000.ppm#t=2.000"
+    }
+  },
+  "streaming_runs": [
+    {
+      "index": 0,
+      "note": "first request after introducing the JSON grammar",
+      "ttft_seconds": 2.541567090898752,
+      "total_seconds": 2.802712943404913,
+      "prompt_tokens": 347,
+      "completion_tokens": 35
+    },
+    {
+      "index": 1,
+      "note": "warm",
+      "ttft_seconds": 0.05480286851525307,
+      "total_seconds": 0.31360821053385735,
+      "prompt_tokens": 347,
+      "completion_tokens": 35
+    },
+    {
+      "index": 2,
+      "note": "warm",
+      "ttft_seconds": 0.054207999259233475,
+      "total_seconds": 0.31275366991758347,
+      "prompt_tokens": 347,
+      "completion_tokens": 35
+    }
+  ],
+  "summary": {
+    "median_ttft_seconds": 0.05480286851525307,
+    "median_total_seconds": 0.31360821053385735
+  }
+}

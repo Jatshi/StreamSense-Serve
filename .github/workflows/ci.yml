@@ -24,6 +24,8 @@ jobs:
       - run: ruff check .
       - run: ruff format --check .
       - run: pytest --cov=streamsense --cov-report=term-missing --cov-fail-under=80
+      - run: make smoke
+      - run: make benchmark
 
   docker:
     runs-on: ubuntu-latest

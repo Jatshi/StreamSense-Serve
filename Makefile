@@ -1,24 +1,26 @@
+PYTHON ?= python
+
 .PHONY: install test lint format serve smoke benchmark
 
 install:
-	python -m pip install -e ".[dev]"
+	$(PYTHON) -m pip install -e ".[dev]"
 
 test:
-	pytest --cov=streamsense --cov-report=term-missing --cov-fail-under=80
+	$(PYTHON) -m pytest --cov=streamsense --cov-report=term-missing --cov-fail-under=80
 
 lint:
-	ruff check .
-	ruff format --check .
+	$(PYTHON) -m ruff check .
+	$(PYTHON) -m ruff format --check .
 
 format:
-	ruff check . --fix
-	ruff format .
+	$(PYTHON) -m ruff check . --fix
+	$(PYTHON) -m ruff format .
 
 serve:
 	streamsense serve --host 127.0.0.1 --port 8000
 
 smoke:
-	python scripts/smoke_test.py
+	$(PYTHON) scripts/smoke_test.py
 
 benchmark:
-	python scripts/routing_benchmark.py --fixture benchmarks/data/router_fixture.jsonl --output runs/routing.json
+	$(PYTHON) scripts/routing_benchmark.py --fixture benchmarks/data/router_fixture.jsonl --output runs/routing.json

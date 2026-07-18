@@ -58,6 +58,8 @@ def test_upload_wave_runs_media_pipeline(tmp_path) -> None:
     evidence = client.get(f"/v1/evidence/{events[0]['event_id']}/0")
     assert evidence.status_code == 200
     assert evidence.content[:4] == b"RIFF"
+    metrics = client.get("/metrics").text
+    assert 'streamsense_route_decisions_total{route="lightweight"}' in metrics
 
 
 def test_upload_rejects_unsupported_media(tmp_path) -> None:
