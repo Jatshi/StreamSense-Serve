@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 
-from streamsense.media import AudioEnergyAnalyzer, MediaPipeline
+from streamsense.media import AudioEnergyAnalyzer, MediaPipeline, Observation
 from streamsense.routing import RouterConfig, RuleRouter
 from streamsense.store import EventStore
 
@@ -69,3 +69,39 @@ def test_audio_analyzer_rejects_unsupported_pcm_width(tmp_path) -> None:
         assert "16-bit PCM" in str(error)
     else:
         raise AssertionError("unsupported sample width must fail at the input boundary")
+
+
+def test_pipeline_invokes_escalator_for_uncertain_observation(tmp_path) -> None:
+    media_path = tmp_path / "tone.wav"
+    write_test_wave(media_path)
+
+    class UncertainAnalyzer:
+        def analyze(self, media_path, *, stream_id):
+            del stream_id
+            original = AudioEnergyAnalyzer().analyze(media_path, stream_id="unused")[0]
+            return [
+                Observation(
+                    **{
+                        **original.__dict__,
+                        "uncertainty": 0.99,
+                    }
+                )
+            ]
+
+    class RecordingEscalator:
+        called = 0
+
+        def enhance(self, observation):
+            self.called += 1
+            return Observation(**{**observation.__dict__, "summary": "Enhanced evidence."})
+
+    escalator = RecordingEscalator()
+    store = EventStore(tmp_path / "events.db")
+    MediaPipeline(
+        analyzers=[UncertainAnalyzer()],
+        router=RuleRouter(RouterConfig(exploration_rate=0.0)),
+        store=store,
+        escalator=escalator,
+    ).analyze(media_path, stream_id="escalation-demo")
+    assert escalator.called == 1
+    assert store.list()[0].summary == "Enhanced evidence."

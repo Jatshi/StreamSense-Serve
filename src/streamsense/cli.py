@@ -11,6 +11,7 @@ from .analyzers import FasterWhisperAnalyzer, FrameChangeAnalyzer
 from .media import AudioEnergyAnalyzer, MediaPipeline
 from .routing import RouteFeatures, RouterConfig, RuleRouter
 from .store import EventStore
+from .vlm import OpenAIVLMEnhancer
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -36,6 +37,8 @@ def build_parser() -> argparse.ArgumentParser:
     analyze.add_argument("--device", default="cuda")
     analyze.add_argument("--compute-type", default="float16")
     analyze.add_argument("--model-cache", type=Path)
+    analyze.add_argument("--vlm-base-url")
+    analyze.add_argument("--vlm-model")
     return parser
 
 
@@ -58,10 +61,16 @@ def main() -> int:
                     cache_dir=args.model_cache,
                 )
             )
+        escalator = (
+            OpenAIVLMEnhancer(base_url=args.vlm_base_url, model=args.vlm_model)
+            if args.vlm_base_url and args.vlm_model
+            else None
+        )
         result = MediaPipeline(
             analyzers=analyzers,
             router=RuleRouter(RouterConfig()),
             store=EventStore(args.database),
+            escalator=escalator,
         ).analyze(args.media, stream_id=args.stream_id)
         print(json.dumps(asdict(result), ensure_ascii=False, indent=2))
         return 0

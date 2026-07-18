@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "created_at_unix": 1784357701.801187,
+  "environment": {
+    "python": "3.10.8",
+    "platform": "Linux-5.15.0-97-generic-x86_64-with-glibc2.35",
+    "gpu_before": {
+      "available": "true",
+      "name": "NVIDIA GeForce RTX 4090",
+      "driver": "570.124.04",
+      "memory_used_mib": "1",
+      "memory_total_mib": "24564",
+      "utilization_percent": "0"
+    },
+    "gpu_after": {
+      "available": "true",
+      "name": "NVIDIA GeForce RTX 4090",
+      "driver": "570.124.04",
+      "memory_used_mib": "1019",
+      "memory_total_mib": "24564",
+      "utilization_percent": "21"
+    }
+  },
+  "configuration": {
+    "model": "small",
+    "device": "cuda",
+    "compute_type": "float16",
+    "media": "jfk.wav",
+    "media_sha256": "59dfb9a4acb36fe2a2affc14bacbee2920ff435cb13cc314a08c13f66ba7860e",
+    "media_duration_seconds": 11.0,
+    "repeats": 3
+  },
+  "summary": {
+    "median_warm_elapsed_seconds": 0.3555172923952341,
+    "real_time_factor": 0.03231975385411219
+  },
+  "runs": [
+    {
+      "index": 0,
+      "elapsed_seconds": 304.439792599529,
+      "segments": 1,
+      "transcript": "And so my fellow Americans, ask not what your country can do for you, ask what you can do for your country.",
+      "mean_confidence": 0.7785994308116684
+    },
+    {
+      "index": 1,
+      "elapsed_seconds": 0.3798329085111618,
+      "segments": 1,
+      "transcript": "And so my fellow Americans, ask not what your country can do for you, ask what you can do for your country.",
+      "mean_confidence": 0.7785994308116684
+    },
+    {
+      "index": 2,
+      "elapsed_seconds": 0.3312016762793064,
+      "segments": 1,
+      "transcript": "And so my fellow Americans, ask not what your country can do for you, ask what you can do for your country.",
+      "mean_confidence": 0.7785994308116684
+    }
+  ]
+}
+

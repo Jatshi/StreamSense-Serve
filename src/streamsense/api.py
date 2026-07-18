@@ -14,6 +14,7 @@ from .media import AudioEnergyAnalyzer, MediaPipeline, PipelineResult
 from .routing import RouteDecision, RouteFeatures, RouterConfig, RuleRouter
 from .schema import EventRecord, GroundedAnswer, QueryRequest
 from .store import EventStore
+from .vlm import OpenAIVLMEnhancer
 
 
 def create_app(
@@ -42,7 +43,19 @@ def create_app(
                 language=os.environ.get("STREAMSENSE_ASR_LANGUAGE") or None,
             )
         )
-    media_pipeline = MediaPipeline(analyzers=analyzers, router=router, store=store)
+    vlm_base_url = os.environ.get("STREAMSENSE_VLM_BASE_URL")
+    vlm_model = os.environ.get("STREAMSENSE_VLM_MODEL")
+    escalator = (
+        OpenAIVLMEnhancer(base_url=vlm_base_url, model=vlm_model)
+        if vlm_base_url and vlm_model
+        else None
+    )
+    media_pipeline = MediaPipeline(
+        analyzers=analyzers,
+        router=router,
+        store=store,
+        escalator=escalator,
+    )
 
     app = FastAPI(
         title="StreamSense-Serve",

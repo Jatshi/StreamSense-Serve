@@ -35,6 +35,10 @@ class MediaAnalyzer(Protocol):
     def analyze(self, media_path: Path, *, stream_id: str) -> list[Observation]: ...
 
 
+class ObservationEscalator(Protocol):
+    def enhance(self, observation: Observation) -> Observation: ...
+
+
 @dataclass(frozen=True)
 class PipelineResult:
     stream_id: str
@@ -160,12 +164,14 @@ class MediaPipeline:
         analyzers: list[MediaAnalyzer],
         router: RuleRouter,
         store: EventStore,
+        escalator: ObservationEscalator | None = None,
     ) -> None:
         if not analyzers:
             raise ValueError("at least one analyzer is required")
         self.analyzers = analyzers
         self.router = router
         self.store = store
+        self.escalator = escalator
 
     def analyze(self, media_path: str | Path, *, stream_id: str) -> PipelineResult:
         started = time.perf_counter()
@@ -191,6 +197,8 @@ class MediaPipeline:
             )
             lightweight += decision.route == "lightweight"
             escalated += decision.route == "vlm_escalated"
+            if decision.route == "vlm_escalated" and self.escalator is not None:
+                observation = self.escalator.enhance(observation)
             event_id = self._event_id(stream_id, observation)
             elapsed_ms = (time.perf_counter() - started) * 1000
             self.store.upsert(

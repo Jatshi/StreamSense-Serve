@@ -28,6 +28,11 @@ Open `http://127.0.0.1:8000/docs` for the API documentation.
 To enable timestamped ASR, install `.[asr]` and set `STREAMSENSE_ASR_MODEL=small`. The model is
 loaded lazily on the first media request. Video scene-change analysis uses the `media` extra.
 
+To connect a local vLLM/SGLang server, set `STREAMSENSE_VLM_BASE_URL` and
+`STREAMSENSE_VLM_MODEL`. Only observations selected by the adaptive router are sent to that
+OpenAI-compatible endpoint; image evidence is embedded as a data URL and the response is schema
+validated before persistence.
+
 ## Safety and privacy
 
 The project does not perform identity recognition. Use only media that you are licensed and
