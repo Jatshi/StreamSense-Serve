@@ -18,12 +18,15 @@ the project plan.
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-python -m pip install -e ".[dev]"
+python -m pip install -e ".[dev,media]"
 pytest
 streamsense serve --host 127.0.0.1 --port 8000
 ```
 
 Open `http://127.0.0.1:8000/docs` for the API documentation.
+
+To enable timestamped ASR, install `.[asr]` and set `STREAMSENSE_ASR_MODEL=small`. The model is
+loaded lazily on the first media request. Video scene-change analysis uses the `media` extra.
 
 ## Safety and privacy
 
@@ -34,4 +37,3 @@ safety, or surveillance decisions.
 ## License
 
 Apache-2.0. Third-party model and dataset licenses remain in force.
-

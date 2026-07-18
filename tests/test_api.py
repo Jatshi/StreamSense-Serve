@@ -1,6 +1,7 @@
 from fastapi.testclient import TestClient
 
 from streamsense.api import create_app
+from tests.test_media import write_test_wave
 
 
 def test_health_and_demo_pipeline(tmp_path) -> None:
@@ -29,3 +30,32 @@ def test_health_and_demo_pipeline(tmp_path) -> None:
     answer = client.post("/v1/query", json={"question": "What did the speaker propose?"})
     assert answer.status_code == 200
     assert answer.json()["event_ids"] == ["evt_api_001"]
+
+
+def test_upload_wave_runs_media_pipeline(tmp_path) -> None:
+    source = tmp_path / "source.wav"
+    write_test_wave(source)
+    app = create_app(database_path=tmp_path / "events.db", media_dir=tmp_path / "media")
+    client = TestClient(app)
+    with source.open("rb") as media:
+        response = client.post(
+            "/v1/media/analyze",
+            data={"stream_id": "upload-demo"},
+            files={"file": ("source.wav", media, "audio/wav")},
+        )
+    assert response.status_code == 201
+    payload = response.json()
+    assert payload["events_created"] >= 1
+    events = client.get("/v1/events", params={"stream_id": "upload-demo"}).json()
+    assert events[0]["evidence"][0]["kind"] == "audio"
+
+
+def test_upload_rejects_unsupported_media(tmp_path) -> None:
+    app = create_app(database_path=tmp_path / "events.db", media_dir=tmp_path / "media")
+    client = TestClient(app)
+    response = client.post(
+        "/v1/media/analyze",
+        data={"stream_id": "bad"},
+        files={"file": ("bad.exe", b"not media", "application/octet-stream")},
+    )
+    assert response.status_code == 415
