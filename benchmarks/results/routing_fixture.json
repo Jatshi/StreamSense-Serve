@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "fixture": "benchmarks/data/router_fixture.jsonl",
+  "warning": "Curated engineering fixture; not a corpus-level quality benchmark.",
+  "systems": {
+    "rule_router": {
+      "examples": 20,
+      "escalations": 10,
+      "true_positives": 9,
+      "false_positives": 1,
+      "false_negatives": 1,
+      "recall": 0.9,
+      "precision": 0.9,
+      "escalation_rate": 0.5,
+      "gpu_seconds": 3.5000000000000004
+    },
+    "uncertainty_only": {
+      "examples": 20,
+      "escalations": 6,
+      "true_positives": 5,
+      "false_positives": 1,
+      "false_negatives": 5,
+      "recall": 0.5,
+      "precision": 0.8333333333333334,
+      "escalation_rate": 0.3,
+      "gpu_seconds": 2.1
+    },
+    "never_escalate": {
+      "examples": 20,
+      "escalations": 0,
+      "true_positives": 0,
+      "false_positives": 0,
+      "false_negatives": 10,
+      "recall": 0.0,
+      "precision": 1.0,
+      "escalation_rate": 0.0,
+      "gpu_seconds": 0.0
+    },
+    "always_escalate": {
+      "examples": 20,
+      "escalations": 20,
+      "true_positives": 10,
+      "false_positives": 10,
+      "false_negatives": 0,
+      "recall": 1.0,
+      "precision": 0.5,
+      "escalation_rate": 1.0,
+      "gpu_seconds": 6.999999999999997
+    }
+  }
+}
