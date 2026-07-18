@@ -9,6 +9,18 @@ from pathlib import Path
 
 import httpx
 
+VLM_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "summary": {"type": "string", "minLength": 1, "maxLength": 1000},
+        "label": {"type": "string", "minLength": 1, "maxLength": 100},
+        "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+        "risk_score": {"type": "number", "minimum": 0, "maximum": 1},
+    },
+    "required": ["summary", "label", "confidence", "risk_score"],
+    "additionalProperties": False,
+}
+
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Measure streaming TTFT for one visual fixture")
@@ -45,6 +57,14 @@ def _run(client: httpx.Client, *, base_url: str, model: str, image_url: str) -> 
             "max_tokens": 200,
             "stream": True,
             "stream_options": {"include_usage": True},
+            "response_format": {
+                "type": "json_schema",
+                "json_schema": {
+                    "name": "vlm_description",
+                    "strict": True,
+                    "schema": VLM_SCHEMA,
+                },
+            },
             "messages": [
                 {
                     "role": "system",
