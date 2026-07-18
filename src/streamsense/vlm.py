@@ -89,6 +89,14 @@ class OpenAIVLMEnhancer:
                 "model": self.model,
                 "temperature": 0,
                 "max_tokens": 200,
+                "response_format": {
+                    "type": "json_schema",
+                    "json_schema": {
+                        "name": "vlm_description",
+                        "strict": True,
+                        "schema": VLMDescription.model_json_schema(),
+                    },
+                },
                 "messages": [
                     {
                         "role": "system",

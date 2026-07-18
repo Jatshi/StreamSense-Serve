@@ -26,6 +26,8 @@ def test_openai_vlm_enhancer_preserves_evidence_and_parses_json(tmp_path) -> Non
         payload = json.loads(request.content)
         image_url = payload["messages"][1]["content"][1]["image_url"]["url"]
         assert image_url.startswith("data:image/x-portable-pixmap;base64,")
+        assert payload["response_format"]["type"] == "json_schema"
+        assert payload["response_format"]["json_schema"]["strict"] is True
         return httpx.Response(
             200,
             json={
