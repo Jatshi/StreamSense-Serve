@@ -1,6 +1,12 @@
-# StreamSense-Serve
+# StreamSense-Serve 2.0
 
-Evidence-first audiovisual event inference with adaptive escalation to a vision-language model.
+[![CI](https://github.com/Jatshi/StreamSense-Serve/actions/workflows/ci.yml/badge.svg)](https://github.com/Jatshi/StreamSense-Serve/actions/workflows/ci.yml)
+
+[2.0 从零手搓学习手册](docs/streamsense_v2_from_scratch_zh.md) ·
+[AutoDL 运行手册](docs/V2_AUTODL_RUNBOOK.md) ·
+[项目计划](docs/PROJECT_PLAN.md)
+
+Evidence-first multimodal inference, OpenAI-compatible serving, and a reviewable data flywheel.
 
 [简体中文](README.zh-CN.md)
 
@@ -12,6 +18,16 @@ uncertain, conflicting, or visually grounded requests to an expensive VLM worker
 
 ## What is implemented
 
+- Versioned vLLM, SGLang, and generic OpenAI-compatible backend profiles with explicit model,
+  quantization, context-length, memory, timeout, and health contracts.
+- EvidenceAgent-MM request/response adaptation with strict citation IDs and
+  answer/clarify/abstain validation.
+- Token-protected, deduplicated feedback persistence with explicit training consent/license,
+  deterministic SFT/DPO candidates, a structured EvidenceAgent bridge, and hashed export manifest.
+- Revision-guarded model manifest, atomic activation state, backend health gate, and rollback.
+- Streaming load tests for TTFT, TPOT, request throughput, error rate, and optional raw
+  `nvidia-smi` sampling. Streaming deltas are reported honestly as output units, not tokenizer
+  tokens.
 - Validated event/evidence schema and parameterized SQLite persistence.
 - WAV activity detection, timestamped faster-whisper ASR, and video frame-change evidence.
 - Risk/uncertainty/conflict-aware routing with deterministic exploration.
@@ -30,6 +46,40 @@ python -m pip install -e ".[dev,media]"
 pytest
 streamsense serve --host 127.0.0.1 --port 8000
 ```
+
+## AutoDL-ready 2.0 entry points
+
+No GPU is required for the smoke gate:
+
+```bash
+export PORTFOLIO_V2_MODE=smoke
+bash scripts/autodl_v2_bootstrap.sh
+bash scripts/autodl_v2_run.sh
+```
+
+For the RTX 4090 full run, create independent random admin/feedback tokens, inspect
+`configs/backends.json`, then run:
+
+```bash
+export PORTFOLIO_V2_MODE=full
+export STREAMSENSE_ADMIN_TOKEN="$(python -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export STREAMSENSE_FEEDBACK_TOKEN="$(python -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export STREAMSENSE_INFERENCE_TOKEN="$(python -c 'import secrets; print(secrets.token_urlsafe(32))')"
+export STREAMSENSE_V2_ACTION=benchmark
+bash scripts/autodl_v2_bootstrap.sh
+bash scripts/autodl_v2_run.sh
+```
+
+The full runner starts the selected vLLM/SGLang profile, waits for its real health endpoint,
+then starts the API. `STREAMSENSE_V2_ACTION=benchmark` writes measured API and streaming-backend
+JSON and exits cleanly; `serve` keeps both processes resident. It does not synthesize performance
+numbers. See
+[`docs/V2_AUTODL_RUNBOOK.md`](docs/V2_AUTODL_RUNBOOK.md) for backend selection, feedback export,
+load-test commands, hot switching, rollback, and failure recovery.
+
+The existing `/v1/events`, `/v1/query`, and `/v1/media/analyze` contracts remain compatible.
+The 2.0 additions are under `/v2/evidence-agent`, `/v2/feedback`, `/v2/models`, and
+`/v2/inference`.
 
 For the exact v0.1.0 reference environment, install `requirements.lock` followed by
 `python -m pip install -e . --no-deps`. The regular extras remain the more flexible developer path.
@@ -77,6 +127,12 @@ configuration, and raw timings are committed; this remains a one-frame engineeri
 The project does not perform identity recognition. Use only media that you are licensed and
 authorized to process. Outputs are decision support and must not be used as autonomous medical,
 safety, or surveillance decisions.
+
+Inference queries and health, feedback writes, and all model-manifest operations require their
+respective bearer tokens. The default examples bind to `127.0.0.1`; do not expose the FastAPI
+process directly to the public internet. Feedback may contain transcripts or corrections, so
+review and redact exported JSONL before publishing or training. Training export is opt-in:
+`consent_for_training=true` and a declared `source_license` are both required.
 
 ## License
 

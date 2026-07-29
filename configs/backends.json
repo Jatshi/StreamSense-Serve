@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "default_profile": "vllm-qwen25-vl-3b",
+  "profiles": [
+    {
+      "name": "vllm-qwen25-vl-3b",
+      "kind": "vllm",
+      "base_url": "http://127.0.0.1:8001",
+      "model": "qwen25-vl-3b-streamsense",
+      "health_path": "/health",
+      "timeout_seconds": 120,
+      "max_retries": 1,
+      "default_max_tokens": 512,
+      "default_temperature": 0.0,
+      "engine": {
+        "model_path": "Qwen/Qwen2.5-VL-3B-Instruct",
+        "served_model_name": "qwen25-vl-3b-streamsense",
+        "revision": "66285546d2b821cf421d4f5eb2576359d3770cd3",
+        "dtype": "bfloat16",
+        "quantization": "none",
+        "tensor_parallel_size": 1,
+        "max_model_len": 8192,
+        "gpu_memory_utilization": 0.88,
+        "trust_remote_code": false,
+        "extra_args": ["--enable-prefix-caching"]
+      }
+    },
+    {
+      "name": "sglang-qwen25-vl-3b",
+      "kind": "sglang",
+      "base_url": "http://127.0.0.1:30000",
+      "model": "qwen25-vl-3b-streamsense",
+      "health_path": "/health",
+      "timeout_seconds": 120,
+      "max_retries": 1,
+      "default_max_tokens": 512,
+      "default_temperature": 0.0,
+      "engine": {
+        "model_path": "Qwen/Qwen2.5-VL-3B-Instruct",
+        "served_model_name": "qwen25-vl-3b-streamsense",
+        "revision": "66285546d2b821cf421d4f5eb2576359d3770cd3",
+        "dtype": "bfloat16",
+        "quantization": "none",
+        "tensor_parallel_size": 1,
+        "max_model_len": 8192,
+        "gpu_memory_utilization": 0.88,
+        "trust_remote_code": false,
+        "extra_args": []
+      }
+    },
+    {
+      "name": "vllm-qwen25-vl-3b-fp8",
+      "kind": "vllm",
+      "base_url": "http://127.0.0.1:8002",
+      "model": "qwen25-vl-3b-streamsense-fp8",
+      "health_path": "/health",
+      "timeout_seconds": 120,
+      "max_retries": 1,
+      "default_max_tokens": 512,
+      "default_temperature": 0.0,
+      "engine": {
+        "model_path": "Qwen/Qwen2.5-VL-3B-Instruct",
+        "served_model_name": "qwen25-vl-3b-streamsense-fp8",
+        "revision": "66285546d2b821cf421d4f5eb2576359d3770cd3",
+        "dtype": "bfloat16",
+        "quantization": "fp8",
+        "tensor_parallel_size": 1,
+        "max_model_len": 8192,
+        "gpu_memory_utilization": 0.88,
+        "trust_remote_code": false,
+        "extra_args": ["--enable-prefix-caching"]
+      }
+    },
+    {
+      "name": "openai-compatible-remote",
+      "kind": "openai",
+      "base_url": "http://127.0.0.1:9000",
+      "model": "replace-with-served-model",
+      "api_key_env": "STREAMSENSE_BACKEND_API_KEY",
+      "health_path": "/v1/models",
+      "timeout_seconds": 120,
+      "max_retries": 1,
+      "default_max_tokens": 512,
+      "default_temperature": 0.0
+    }
+  ]
+}

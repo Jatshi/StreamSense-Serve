@@ -1,5 +1,43 @@
 # Run manifest
 
+## Version 2.0 local preparation
+
+- Scope: OpenAI/vLLM/SGLang profiles, EvidenceAgent adapter, feedback data flywheel, streaming
+  load test, atomic model activation/rollback, and AutoDL entry scripts.
+- Config validation: `python scripts/validate_v2_config.py`
+- Offline quality gate: `python -m ruff check .`, `python -m ruff format --check .`,
+  `python -m pytest --cov=streamsense --cov-report=term-missing`
+- Local result: 48 tests passed, 84.79% statement coverage, Ruff lint/format PASS, config validator
+  PASS, and `PORTFOLIO_V2_MODE=smoke` API startup/probe PASS.
+- Wheel/Docker note: local wheel build could not be re-executed because the offline Windows
+  environment lacks `hatchling`; Docker CLI is unavailable. AutoDL bootstrap installs build/runtime
+  dependencies, while CI remains the authoritative image-build gate.
+- AutoDL entry points: `scripts/autodl_v2_preflight.sh`,
+  `scripts/autodl_v2_bootstrap.sh`, `scripts/autodl_v2_run.sh`
+- Full-mode action contract: `STREAMSENSE_V2_ACTION=benchmark` measures API health and backend
+  streaming load to JSON and exits cleanly; `serve` intentionally remains resident.
+- GPU status: ENVIRONMENT_VERIFIED / MATRIX_PENDING. No 2.0 TTFT, TPOT, throughput,
+  quantization, or memory result is asserted before the three-profile matrix finishes.
+- Expected new artifacts: `benchmarks/results/v2/{api_health,backend_chat}.json`;
+  consent-gated `artifacts/training_candidates/{sft_candidates,dpo_candidates,evidenceagent_bridge,
+  consented_feedback_raw}.jsonl` plus `export_manifest.json`
+
+## V2 AutoDL environment preflight — 2026-07-29
+
+- Hardware: NVIDIA GeForce RTX 4090 24GB; driver 560.35.03.
+- Model: Qwen2.5-VL-3B-Instruct at revision
+  `66285546d2b821cf421d4f5eb2576359d3770cd3`.
+- vLLM environment: vLLM 0.15.1 with a CUDA 12.8-capable PyTorch runtime.
+- SGLang environment: SGLang 0.5.10, PyTorch 2.9.1+cu128, 214 resolved packages.
+- SGLang acceptance: `torch.cuda.is_available()` and a real 64×64 CUDA matrix
+  multiplication passed.
+- Matrix contract: vLLM BF16, vLLM dynamic FP8 with BF16 compute, and SGLang BF16;
+  64 requests at concurrency 1/4/8/16/32, fixed 64-token cap and shared quality fixture.
+- Lifecycle guard: the launcher uses process replacement, and the matrix refuses to start the
+  next profile while any CUDA PID remains.
+- Current status: the full matrix is queued behind Audio-Codec-LLM training so both workloads
+  never contend for the single GPU.
+
 ## Local quality run
 
 - Environment: Windows, Python 3.11.7
