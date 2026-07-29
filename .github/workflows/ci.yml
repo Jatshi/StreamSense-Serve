@@ -23,6 +23,7 @@ jobs:
       - run: python -m pip install -e ".[dev]"
       - run: ruff check .
       - run: ruff format --check .
+      - run: python scripts/validate_v2_config.py
       - run: pytest --cov=streamsense --cov-report=term-missing --cov-fail-under=80
       - run: make smoke
       - run: make benchmark

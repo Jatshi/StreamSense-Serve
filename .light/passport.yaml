@@ -1,22 +1,23 @@
 project: StreamSense-Serve
 owner: Jianting Shi
-status: release_candidate
-current_stage: a05-release-audit
+status: v2_gpu_environment_verified
+current_stage: a04-gpu-matrix-wait
 artifacts:
   project_plan:
     path: docs/PROJECT_PLAN.md
     gate: PASS
-    evidence: "Core v0.1 scope implemented; deferred corpus-level claims remain explicit"
+    evidence: "V2 architecture, safety invariants, local gate, and GPU matrix are explicit"
   implementation:
     path: src/streamsense
     gate: PASS
-    evidence: "32 tests passed; coverage 87%; Linux 3.10 and CI 3.10-3.12 passed"
+    evidence: "48 tests passed at 84.79% coverage; auth, finite benchmark, consent export, backend PID lifecycle, and BF16 matrix contract verified"
   run_manifest:
     path: run_manifest.md
-    gate: PASS
-    evidence: "RTX 4090 ASR, SNR, routing, API load, grounded QA, and local VLM artifacts committed"
+    gate: PENDING_MATRIX
+    evidence: "V2 vLLM and SGLang CUDA environments pass preflight; three-profile serving matrix is queued behind Audio training"
 known_limitations:
+  - "V2 vLLM/SGLang load, quantization, TTFT, TPOT, and VRAM measurements remain pending until the queued matrix finishes."
   - "The routing fixture is curated and not an unbiased deployment evaluation set."
   - "The bundled visual fixture is synthetic; no corpus-level visual accuracy is claimed."
   - "Qwen2.5-VL-3B-Instruct weights require non-commercial use unless separately licensed."
-next_action: "Complete final security/build audit and publish v0.1.0."
+next_action: "After Audio releases the GPU, run the queued BF16/FP8/SGLang matrix, collect JSON, and audit every serving claim."

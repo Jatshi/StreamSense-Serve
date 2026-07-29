@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "streamsense-serve"
-version = "0.1.0"
-description = "Evidence-first real-time audiovisual event inference with adaptive VLM routing."
+version = "0.2.0"
+description = "Evidence-first multimodal inference, serving, and feedback data flywheel."
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "Apache-2.0"}
@@ -46,6 +46,7 @@ observability = [
 
 [project.scripts]
 streamsense = "streamsense.cli:main"
+streamsense-backend = "streamsense.backend_launcher:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/streamsense"]

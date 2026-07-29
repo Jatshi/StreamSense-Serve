@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "models": [
+    {
+      "model_id": "qwen25-vl-3b-baseline",
+      "served_model_name": "qwen25-vl-3b-streamsense",
+      "revision": "66285546d2b821cf421d4f5eb2576359d3770cd3",
+      "backend_profile": "vllm-qwen25-vl-3b",
+      "base_model": "Qwen/Qwen2.5-VL-3B-Instruct",
+      "status": "validated",
+      "notes": "Validated by the existing single-frame RTX 4090 engineering run; not a corpus-level quality claim."
+    },
+    {
+      "model_id": "evidenceagent-mm-2-candidate",
+      "served_model_name": "evidenceagent-mm-2",
+      "revision": "replace-after-training",
+      "backend_profile": "vllm-qwen25-vl-3b",
+      "base_model": "replace-with-selected-base-model",
+      "status": "candidate",
+      "notes": "Activation is intentionally blocked until training artifacts and evaluation gates are complete."
+    }
+  ]
+}

@@ -2,14 +2,21 @@ FROM python:3.11-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    STREAMSENSE_DATABASE=/data/events.db
+    STREAMSENSE_DATABASE=/data/events.db \
+    STREAMSENSE_FEEDBACK_DATABASE=/data/feedback.db \
+    STREAMSENSE_FEEDBACK_EXPORT_DIR=/data/exports \
+    STREAMSENSE_MODEL_MANIFEST=/app/models/serve_manifest.json
 
 WORKDIR /app
 COPY pyproject.toml README.md LICENSE ./
 COPY src ./src
+COPY configs ./configs
+COPY models ./models
 RUN python -m pip install --no-cache-dir ".[media]"
 
-RUN useradd --create-home --uid 10001 streamsense && mkdir -p /data && chown streamsense /data
+RUN useradd --create-home --uid 10001 streamsense \
+    && mkdir -p /data/exports \
+    && chown -R streamsense /data
 USER streamsense
 
 EXPOSE 8000
