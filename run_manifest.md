@@ -10,14 +10,15 @@
 - Local result: 48 tests passed, 84.79% statement coverage, Ruff lint/format PASS, config validator
   PASS, and `PORTFOLIO_V2_MODE=smoke` API startup/probe PASS.
 - Wheel/Docker note: local wheel build could not be re-executed because the offline Windows
-  environment lacks `hatchling`; Docker CLI is unavailable. AutoDL bootstrap installs build/runtime
-  dependencies, while CI remains the authoritative image-build gate.
+  environment lacks `hatchling`; Docker CLI is unavailable. The draft PR's GitHub Actions run
+  passed Python 3.10/3.11/3.12 tests and the authoritative Docker image-build gate.
 - AutoDL entry points: `scripts/autodl_v2_preflight.sh`,
   `scripts/autodl_v2_bootstrap.sh`, `scripts/autodl_v2_run.sh`
 - Full-mode action contract: `STREAMSENSE_V2_ACTION=benchmark` measures API health and backend
   streaming load to JSON and exits cleanly; `serve` intentionally remains resident.
-- GPU status: ENVIRONMENT_VERIFIED / MATRIX_PENDING. No 2.0 TTFT, TPOT, throughput,
-  quantization, or memory result is asserted before the three-profile matrix finishes.
+- GPU status: MATRIX_COMPLETE. Three profiles × five concurrency levels × 64
+  requests completed 960/960 requests without error; raw per-cell reports and
+  the full machine-readable summary are retained.
 - Expected new artifacts: `benchmarks/results/v2/{api_health,backend_chat}.json`;
   consent-gated `artifacts/training_candidates/{sft_candidates,dpo_candidates,evidenceagent_bridge,
   consented_feedback_raw}.jsonl` plus `export_manifest.json`
@@ -28,15 +29,26 @@
 - Model: Qwen2.5-VL-3B-Instruct at revision
   `66285546d2b821cf421d4f5eb2576359d3770cd3`.
 - vLLM environment: vLLM 0.15.1 with a CUDA 12.8-capable PyTorch runtime.
-- SGLang environment: SGLang 0.5.10, PyTorch 2.9.1+cu128, 214 resolved packages.
+- SGLang environment: SGLang 0.5.10, PyTorch 2.9.1+cu128, Ninja 1.13.0.
 - SGLang acceptance: `torch.cuda.is_available()` and a real 64×64 CUDA matrix
   multiplication passed.
 - Matrix contract: vLLM BF16, vLLM dynamic FP8 with BF16 compute, and SGLang BF16;
   64 requests at concurrency 1/4/8/16/32, fixed 64-token cap and shared quality fixture.
 - Lifecycle guard: the launcher uses process replacement, and the matrix refuses to start the
   next profile while any CUDA PID remains.
-- Current status: the full matrix is queued behind Audio-Codec-LLM training so both workloads
-  never contend for the single GPU.
+- Matrix result: all 15 cells completed 64/64 requests; peak observed memory was
+  21,677 MiB (vLLM BF16), 21,683 MiB (vLLM dynamic FP8), and 22,623 MiB
+  (SGLang BF16). At concurrency 32, request throughput was respectively
+  176.806, 189.843, and 144.422 requests/s.
+- Quality fixture: 8/12 (vLLM BF16), 7/12 (vLLM dynamic FP8), 7/12
+  (SGLang BF16). These are fixed service-contract cases, not a general VLM
+  accuracy benchmark.
+- SGLang recovery: three failed startup attempts were preserved. They exposed
+  a missing Ninja dependency and a venv-PATH/symlink bug; the bootstrap,
+  launcher, documentation, and regression test now encode the fix. The
+  successful profile retained the original request and concurrency contract.
+- GitHub status: draft PR #1 is open and initial CI passes; final matrix
+  evidence and documentation are ready for the release commit.
 
 ## Local quality run
 

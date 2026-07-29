@@ -122,6 +122,26 @@ streaming runs had 54.8 ms median TTFT and 313.6 ms median total latency; the fi
 took 2.803 seconds. Resident GPU memory was 17,855 MiB. The input generator, hashes, exact event,
 configuration, and raw timings are committed; this remains a one-frame engineering check.
 
+### Three-profile serving matrix
+
+The release matrix used the same pinned Qwen2.5-VL-3B revision, 8,192-token
+context, 64-token output cap, and request contract for all profiles. Every one
+of the 15 cells completed 64/64 requests with zero errors (960/960 total).
+
+| Profile | Precision | Quality fixture | Peak memory | RPS @ c1 | RPS @ c32 | p50 TTFT @ c32 | completion tok/s @ c32 |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| vLLM 0.15.1 | BF16 | 8/12 | 21,677 MiB | 24.828 | 176.806 | 124.098 ms | 530.417 |
+| vLLM 0.15.1 | dynamic FP8, BF16 compute | 7/12 | 21,683 MiB | 26.291 | 189.843 | 123.866 ms | 569.530 |
+| SGLang 0.5.10 | BF16 | 7/12 | 22,623 MiB | 24.294 | 144.422 | 131.241 ms | 433.267 |
+
+FP8 was fastest at concurrency 32 in this short-output synthetic workload, but
+it did not reduce the server's configured memory reservation and passed one
+fewer item in the 12-case contract fixture. This is not evidence of general VLM
+quality or production capacity. The full 15-row result—including p95 TTFT,
+TPOT, latency, request throughput, reported completion-token throughput, and
+memory—is committed in
+[`docs/benchmark_matrix_4090.json`](docs/benchmark_matrix_4090.json).
+
 ## Safety and privacy
 
 The project does not perform identity recognition. Use only media that you are licensed and

@@ -110,6 +110,18 @@ def main() -> int:
     # Replace the launcher process so its PID is the actual model server PID.
     # Benchmark supervisors can then terminate and reap the backend reliably
     # without leaving an orphaned CUDA process behind.
+    # A venv Python can be invoked by absolute path without activating its
+    # shell environment. Put its bin directory first so backend JIT compilers
+    # can discover console tools installed in the same environment (for
+    # example SGLang's pinned `ninja` executable).
+    # Do not call Path.resolve(): venv/bin/python is commonly a symlink to the
+    # base interpreter, and resolving it would prepend the base bin directory
+    # instead of the venv directory that actually contains console tools.
+    executable_dir = str(Path(command[0]).absolute().parent)
+    inherited_path = os.environ.get("PATH", "")
+    os.environ["PATH"] = (
+        executable_dir if not inherited_path else executable_dir + os.pathsep + inherited_path
+    )
     os.execv(command[0], command)
 
 

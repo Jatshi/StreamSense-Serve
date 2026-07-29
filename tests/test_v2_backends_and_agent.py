@@ -159,6 +159,7 @@ def test_execute_replaces_launcher_process(
         encoding="utf-8",
     )
     calls: list[tuple[str, list[str]]] = []
+    monkeypatch.setenv("PATH", "sentinel-path")
 
     def fake_execv(executable: str, command: list[str]) -> None:
         calls.append((executable, command))
@@ -183,6 +184,9 @@ def test_execute_replaces_launcher_process(
 
     assert calls[0][0] == sys.executable
     assert calls[0][1][1:3] == ["-m", "vllm.entrypoints.openai.api_server"]
+    path_parts = backend_launcher.os.environ["PATH"].split(backend_launcher.os.pathsep)
+    assert path_parts[0] == str(Path(sys.executable).absolute().parent)
+    assert path_parts[1] == "sentinel-path"
 
 
 def test_checked_in_gpu_matrix_uses_bfloat16_contract() -> None:

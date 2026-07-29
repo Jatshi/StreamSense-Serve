@@ -7,6 +7,7 @@ PYTHON_BIN="${PYTHON_BIN:-python}"
 VENV_PATH="${STREAMSENSE_VENV:-${PROJECT_ROOT}/.venv-v2}"
 BACKEND_RUNTIME="${STREAMSENSE_BACKEND_RUNTIME:-vllm}"
 SGLANG_VERSION="${STREAMSENSE_SGLANG_VERSION:-0.5.10}"
+NINJA_VERSION="${STREAMSENSE_NINJA_VERSION:-1.13.0}"
 FLASHINFER_JIT_CACHE_SPEC="${STREAMSENSE_FLASHINFER_JIT_CACHE_SPEC:-flashinfer_jit_cache==0.6.7.post2}"
 export HF_HOME="${HF_HOME:-/root/autodl-tmp/huggingface}"
 export HF_ENDPOINT="${HF_ENDPOINT:-https://hf-mirror.com}"
@@ -39,6 +40,7 @@ if [[ "${MODE}" == "full" ]]; then
       --extra-index-url https://download.pytorch.org/whl/cu128 \
       --extra-index-url https://flashinfer.ai/whl/cu128 \
       "sglang[all]==${SGLANG_VERSION}" \
+      "ninja==${NINJA_VERSION}" \
       "torch==2.9.1+cu128" \
       "triton==3.5.1" \
       "${FLASHINFER_JIT_CACHE_SPEC}"
