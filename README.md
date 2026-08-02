@@ -1,4 +1,9 @@
-# StreamSense-Serve 2.0
+# StreamSense-Serve 3.0
+
+> **RTX 4090 validated:** SLO-aware admission, privacy-safe telemetry, deterministic
+> fault injection and a real 100-request vLLM benchmark are complete. This remains
+> single-GPU evidence, not DP/TP scaling evidence; see
+> [`docs/V3_UPGRADE_AND_LEARNING_ZH.md`](docs/V3_UPGRADE_AND_LEARNING_ZH.md).
 
 <div align="center">
 
@@ -10,7 +15,7 @@
 [![GPU](https://img.shields.io/badge/benchmark-RTX%204090-76B900)](docs/benchmark_matrix_4090.json)
 [![License](https://img.shields.io/badge/code-Apache--2.0-0F766E)](LICENSE)
 
-[简体中文](README.zh-CN.md) · [2.0 release notes](docs/V2_RELEASE_NOTES.md) · [深度学习手册](docs/streamsense_v2_from_scratch_zh.md) · [AutoDL runbook](docs/V2_AUTODL_RUNBOOK.md) · [Benchmark matrix](docs/benchmark_matrix_4090.json)
+[3.0 upgrade & learning](docs/V3_UPGRADE_AND_LEARNING_ZH.md) · [简体中文](README.zh-CN.md) · [2.0 release notes](docs/V2_RELEASE_NOTES.md) · [深度学习手册](docs/streamsense_v2_from_scratch_zh.md) · [AutoDL runbook](docs/V2_AUTODL_RUNBOOK.md) · [Benchmark matrix](docs/benchmark_matrix_4090.json)
 
 ![StreamSense-Serve 2.0: route, serve, verify and learn](docs/assets/streamsense_v2_demo.gif)
 

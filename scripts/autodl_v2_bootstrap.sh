@@ -6,6 +6,7 @@ MODE="${PORTFOLIO_V2_MODE:-smoke}"
 PYTHON_BIN="${PYTHON_BIN:-python}"
 VENV_PATH="${STREAMSENSE_VENV:-${PROJECT_ROOT}/.venv-v2}"
 BACKEND_RUNTIME="${STREAMSENSE_BACKEND_RUNTIME:-vllm}"
+VLLM_VERSION="${STREAMSENSE_VLLM_VERSION:-0.15.1}"
 SGLANG_VERSION="${STREAMSENSE_SGLANG_VERSION:-0.5.10}"
 NINJA_VERSION="${STREAMSENSE_NINJA_VERSION:-1.13.0}"
 FLASHINFER_JIT_CACHE_SPEC="${STREAMSENSE_FLASHINFER_JIT_CACHE_SPEC:-flashinfer_jit_cache==0.6.7.post2}"
@@ -24,7 +25,19 @@ python -m pip install -e "${PROJECT_ROOT}[dev,media,asr]"
 
 if [[ "${MODE}" == "full" ]]; then
   if [[ "${BACKEND_RUNTIME}" == "vllm" ]]; then
-    python -m pip install "vllm==0.15.1"
+    if [[ "${VLLM_VERSION}" == "0.12.0" ]]; then
+      # Driver-560-compatible runtime. Pin NumPy/OpenCV together because
+      # vLLM/Transformers still require NumPy 1.x while newer OpenCV wheels
+      # pull NumPy 2.x.
+      python -m pip install --index-url https://download.pytorch.org/whl/cu128 \
+        torch==2.9.0 torchvision==0.24.0 torchaudio==2.9.0
+      python -m pip install \
+        'numpy>=1.26,<2' \
+        opencv-python-headless==4.11.0.86 \
+        vllm==0.12.0
+    else
+      python -m pip install "vllm==${VLLM_VERSION}"
+    fi
   elif [[ "${BACKEND_RUNTIME}" == "sglang" ]]; then
     # SGLang >=0.5.11 switched its default wheels to Torch 2.11/CUDA 13.
     # AutoDL's 560-series driver cannot initialize that runtime. Keep SGLang

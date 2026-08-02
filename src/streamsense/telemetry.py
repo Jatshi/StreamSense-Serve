@@ -24,6 +24,29 @@ ROUTE_DECISIONS = Counter(
     ("route",),
 )
 
+_SAFE_GENAI_ATTRIBUTES = frozenset(
+    {
+        "gen_ai.operation.name",
+        "gen_ai.provider.name",
+        "gen_ai.request.model",
+        "gen_ai.response.model",
+        "gen_ai.response.finish_reasons",
+        "gen_ai.usage.input_tokens",
+        "gen_ai.usage.output_tokens",
+    }
+)
+
+
+def sanitize_genai_attributes(attributes: dict[str, object]) -> dict[str, object]:
+    """Apply a strict allow-list before exporting GenAI span attributes.
+
+    Prompt, response, user, file, and media content are intentionally excluded.
+    Deployments may add opaque hashes in a separate policy layer, but raw content
+    must never reach the default exporter.
+    """
+
+    return {key: value for key, value in attributes.items() if key in _SAFE_GENAI_ATTRIBUTES}
+
 
 def configure_telemetry(app: FastAPI) -> None:
     @app.middleware("http")
@@ -55,7 +78,9 @@ def _enable_opentelemetry(app: FastAPI) -> None:
     try:
         from opentelemetry import trace
         from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
-        from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+        from opentelemetry.instrumentation.fastapi import (  # type: ignore[import-not-found]
+            FastAPIInstrumentor,
+        )
         from opentelemetry.sdk.resources import Resource
         from opentelemetry.sdk.trace import TracerProvider
         from opentelemetry.sdk.trace.export import BatchSpanProcessor

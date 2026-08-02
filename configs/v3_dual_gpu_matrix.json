@@ -1,0 +1,12 @@
+{
+  "schema_version": "streamsense.serving_matrix.v3.dev1",
+  "versions": {"vllm": "0.26.0", "sglang": "0.5.16"},
+  "modes": [
+    {"name": "vllm_dp2", "gpus": 2, "data_parallel_size": 2, "tensor_parallel_size": 1},
+    {"name": "vllm_tp2", "gpus": 2, "data_parallel_size": 1, "tensor_parallel_size": 2},
+    {"name": "sglang_tp2", "gpus": 2, "tensor_parallel_size": 2}
+  ],
+  "faults": ["timeout", "oom", "process_exit", "malformed_response", "trace_export_failure"],
+  "objectives": ["latency_ms", "cost", "quality", "safety"],
+  "status": "cpu_routing_verified_dual_gpu_pending"
+}
