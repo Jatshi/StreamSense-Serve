@@ -922,3 +922,98 @@ Docker tag 可变且只描述镜像；manifest 记录模型 revision、状态、
 面试时可说：我做的是控制变量的 serving 工程矩阵，结论只对这张卡、这个 revision、
 这些版本和这个 workload 有效；它证明 vLLM/SGLang 抽象、量化对照、压测语义、
 失败恢复和生命周期治理，不冒充生产容量或通用模型准确率。
+
+---
+
+## 18. 2.0 真实实施日志与踩坑复盘
+
+### 18.1 正确实施顺序
+
+项目不是先装两个推理框架再“看看谁快”。真正顺序是：冻结请求与输出合同 → 写 backend
+profile → 用假 OpenAI server 测 launcher/stream parser → 固定模型 revision 与 workload →
+分别安装并启动真实后端 → 每个 profile 先过 health 和 12-case quality gate → 再跑五档
+并发 → 确认 CUDA PID 清零后切下一个 profile → 汇总完整矩阵。
+
+这个顺序避免两个常见错误：把后端启动失败误判成模型质量问题，以及让上一个服务残留
+显存污染下一个 profile。
+
+### 18.2 坑一：`sglang[all]` 不等于系统里有 Ninja
+
+第一次 SGLang 启动失败发生在 JIT 编译。Python extra 名称看起来像“全依赖”，但实际
+kernel 构建调用的是 PATH 中的外部 `ninja` 可执行文件。排查依据是 backend log 中第一
+个 root cause，而不是进程是否仍存在。最终 bootstrap 显式固定 `ninja==1.13.0`，并在
+preflight 同时检查 Python package 和 `ninja --version`。
+
+### 18.3 坑二：调用 venv Python 不会自动继承 venv PATH
+
+第二次启动时 Ninja 已安装在 venv，但 launcher 用绝对路径调用 `venv/bin/python`；
+子进程 PATH 仍来自父 shell，JIT 找不到 `venv/bin/ninja`。这说明“解释器来自 venv”与
+“shell 可执行搜索路径包含 venv”是两条独立状态。修复是在 launcher 构造子进程环境时
+把解释器所在 `bin` 置于 PATH 首位。
+
+### 18.4 坑三：`Path.resolve()` 把修复又破坏了
+
+第三次失败更隐蔽：为得到解释器目录，代码先对 `venv/bin/python` 调 `resolve()`，它
+沿符号链接回到 base Python，于是加入 PATH 的仍是错误目录。最终使用未解析的可执行
+路径父目录，并写回归测试构造“venv python 是 symlink”的场景。这个案例适合面试，
+因为它展示了修复本身也需要可证伪测试。
+
+### 18.5 坑四：动态 FP8 更快但没有省服务预留显存
+
+仅看权重位宽会预期显存大幅下降；实测 vLLM BF16/FP8 峰值分别 21,677/21,683 MiB。
+原因是服务总显存还包括 KV cache、workspace、CUDA graph 和按比例预留，动态量化也
+不等价于完整静态 FP8 checkpoint。最终 README 同时报吞吐、质量和显存：FP8 c32
+吞吐高约 7.4%，但质量 7/12 对 BF16 8/12，不能只发布“最快”一列。
+
+### 18.6 坑五：SGLang 并发 4 尾延迟离群
+
+SGLang c4 的 TTFT p95 为 412.955 ms，明显差于相邻并发。没有删行或无限重跑直到
+数字好看，而是保存 raw report 并明确它可能来自 warmup/JIT/scheduler 抖动。严谨做法
+是增加重复轮次和置信区间；当前发布只称“固定短测中的观测值”。
+
+### 18.7 坑六：streaming delta 不是 token
+
+有些 OpenAI-compatible 后端在 SSE chunk 中不返回 usage。若把每个 delta、字符或词
+直接叫 token，吞吐不可比较。实现保留 client-observed output units；只有响应明确提供
+completion tokens 时才报告 token/s。发布矩阵固定后端和请求合同，仍注明 tokenizer
+与 usage 来源。
+
+### 18.8 坑七：模型切换不能只改一个配置指针
+
+若先写 active model 再启动候选，失败会让流量指向不可用服务。2.0 的顺序是注册候选
+revision → 启动 → health → quality contract → 原子写 activation state，并保留 previous
+以便 rollback。当前只有单实例治理，缺少双实例 connection draining，所以不能写
+“零停机热更新”。
+
+### 18.9 从失败到完整 15 格矩阵
+
+三次失败都保留 log；修复后也没有减少请求数。每个 profile 的验收步骤是：
+
+1. 记录模型/后端/torch/CUDA/Ninja 精确版本；
+2. health 返回预期模型 ID；
+3. 跑 12-case JSON/引用/时间戳/拒答 fixture；
+4. 依次跑并发 1/4/8/16/32，每格 64 请求；
+5. 保存 SSE raw metrics 和 NVML peak；
+6. 终止进程并确认没有 CUDA PID；
+7. 最后一次性生成 15 行矩阵，禁止人工挑行。
+
+### 18.10 可直接用于面试的 STAR 案例
+
+| Situation | Task | Action | Result / Learning |
+| --- | --- | --- | --- |
+| SGLang 三次启动失败 | 保持原 benchmark 范围完成对照 | 顺着首个 root cause 查 Ninja、PATH、symlink，逐次加回归测试 | 固定环境后 320/320 SGLang 请求成功；环境是服务合同的一部分 |
+| FP8 未省总显存 | 解释量化是否值得上线 | 同时测吞吐、quality、NVML，不用位宽推断 | c32 更快但少过 1 case；不默认替换 BF16 |
+| c4 出现 413 ms TTFT p95 | 决定是否重跑/删除 | 保留 raw 行，限定结论并提出重复实验 | 结果可审计；避免 cherry-pick |
+| 后端 usage 缺失 | 统一吞吐语义 | token 指标 fail closed，另报 output units | 不再把字符或 SSE chunk 冒充 token |
+
+### 18.11 亲手复现练习
+
+- 写一个 20 行假 SSE server，故意把 JSON 跨两个 chunk，验证 parser；
+- 手算四个请求的 TTFT p50/p95，并说明插值法；
+- 删除 `source_license`，确认 feedback export fail closed；
+- 把 venv Python 改成 symlink，复现 PATH 回归测试；
+- 在固定 c8 下只改变 `max_tokens`，观察 RPS 为什么不可直接比较；
+- 设计双实例 blue/green 切换状态机，补上 drain 与 rollback 条件。
+
+完成这些练习后，你应该能解释服务框架背后的调度、测量与生命周期，而不是只会说
+“我用过 vLLM”。
