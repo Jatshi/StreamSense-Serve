@@ -111,7 +111,7 @@ def create_app(
 
     app = FastAPI(
         title="StreamSense-Serve",
-        version="0.2.0",
+        version="2.0.0",
         description=(
             "Evidence-first audiovisual event service with adaptive routing, "
             "OpenAI-compatible inference, and a feedback data flywheel."

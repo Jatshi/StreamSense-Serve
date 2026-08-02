@@ -1,22 +1,39 @@
 # StreamSense-Serve 2.0
 
+<div align="center">
+
+**Evidence-first multimodal inference, adaptive routing, and a reviewable data flywheel.**
+
+[![Release](https://img.shields.io/badge/release-v2.0.0-7C3AED)](https://github.com/Jatshi/StreamSense-Serve/releases/tag/v2.0.0)
 [![CI](https://github.com/Jatshi/StreamSense-Serve/actions/workflows/ci.yml/badge.svg)](https://github.com/Jatshi/StreamSense-Serve/actions/workflows/ci.yml)
+[![Docker](https://img.shields.io/badge/docker-verified-2496ED)](Dockerfile)
+[![GPU](https://img.shields.io/badge/benchmark-RTX%204090-76B900)](docs/benchmark_matrix_4090.json)
+[![License](https://img.shields.io/badge/code-Apache--2.0-0F766E)](LICENSE)
 
-[2.0 从零手搓学习手册](docs/streamsense_v2_from_scratch_zh.md) ·
-[AutoDL 运行手册](docs/V2_AUTODL_RUNBOOK.md) ·
-[项目计划](docs/PROJECT_PLAN.md)
+[简体中文](README.zh-CN.md) · [2.0 release notes](docs/V2_RELEASE_NOTES.md) · [深度学习手册](docs/streamsense_v2_from_scratch_zh.md) · [AutoDL runbook](docs/V2_AUTODL_RUNBOOK.md) · [Benchmark matrix](docs/benchmark_matrix_4090.json)
 
-Evidence-first multimodal inference, OpenAI-compatible serving, and a reviewable data flywheel.
+![StreamSense-Serve 2.0: route, serve, verify and learn](docs/assets/streamsense_v2_demo.gif)
 
-[简体中文](README.zh-CN.md)
+</div>
+
+> Route cheap cases locally, escalate risky or visual cases to a VLM, preserve replayable
+> evidence, and export training feedback only after consent and license gates pass.
+
+<details>
+<summary>Static evidence console</summary>
 
 ![StreamSense evidence console](docs/assets/dashboard.png)
+
+</details>
 
 StreamSense-Serve turns time-aligned audio and video observations into structured events. Every
 non-abstained result carries replayable evidence, and a configurable router escalates only risky,
 uncertain, conflicting, or visually grounded requests to an expensive VLM worker.
 
 ## What is implemented
+
+For the file-level delta, measured evidence, failure diary, and claim boundaries, read the
+[2.0 release notes](docs/V2_RELEASE_NOTES.md).
 
 - Versioned vLLM, SGLang, and generic OpenAI-compatible backend profiles with explicit model,
   quantization, context-length, memory, timeout, and health contracts.

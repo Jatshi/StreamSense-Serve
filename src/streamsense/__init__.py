@@ -3,4 +3,4 @@
 from .schema import EventRecord, Evidence
 
 __all__ = ["EventRecord", "Evidence"]
-__version__ = "0.2.0"
+__version__ = "2.0.0"

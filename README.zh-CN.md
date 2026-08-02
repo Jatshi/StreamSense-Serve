@@ -1,12 +1,26 @@
-# StreamSense-Serve
+# StreamSense-Serve 2.0
+
+<div align="center">
+
+[![Release](https://img.shields.io/badge/release-v2.0.0-7C3AED)](https://github.com/Jatshi/StreamSense-Serve/releases/tag/v2.0.0)
+[![CI](https://github.com/Jatshi/StreamSense-Serve/actions/workflows/ci.yml/badge.svg)](https://github.com/Jatshi/StreamSense-Serve/actions/workflows/ci.yml)
+[![GPU](https://img.shields.io/badge/benchmark-RTX%204090-76B900)](docs/benchmark_matrix_4090.json)
+
+[2.0 新增内容](docs/V2_RELEASE_NOTES.md) · [从零手搓学习手册](docs/streamsense_v2_from_scratch_zh.md) · [AutoDL 手册](docs/V2_AUTODL_RUNBOOK.md) · [English](README.md)
+
+![StreamSense-Serve 2.0 动态演示](docs/assets/streamsense_v2_demo.gif)
+
+</div>
 
 一个“证据优先”的音视频事件推理服务：先用轻量分析器产生带时间戳的候选事件，再依据风险、
 不确定性、跨模态冲突和视觉依赖决定是否升级到本地视觉语言模型。任何非拒答结论都必须关联
 可回放的音频区间、转写或视频帧。
 
-[English](README.md)
-
 ## 已实现能力
+
+2.0 新增统一 vLLM/SGLang 后端合同、BF16/动态 FP8 对照、正确的流式 TTFT/TPOT
+测量、EvidenceAgent 三态兼容、consent/license 数据飞轮，以及 revision-guarded 模型
+切换与回滚。完整文件级变更和真实失败复盘见 [2.0 发布说明](docs/V2_RELEASE_NOTES.md)。
 
 - 16-bit PCM WAV 能量活动检测与 faster-whisper 时间戳转写。
 - 视频抽帧、场景变化检测及证据帧持久化。
